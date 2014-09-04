@@ -1,14 +1,11 @@
-# http://www.gnu.org/software/automake
+#the compiled js and css 
+static/css
+static/js
 
-Makefile.in
+#node_modules files
+node_modules
 
-# http://www.gnu.org/software/autoconf
+#sass cache
+.sass-cache
 
-/autom4te.cache
-/aclocal.m4
-/compile
-/configure
-/depcomp
-/install-sh
-/missing
-/stamp-h1
+Gruntfile.js
