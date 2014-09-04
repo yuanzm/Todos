@@ -8,7 +8,7 @@ todoList =
 		newTodo = document.getElementById "new-todo"
 		form.addEventListener "submit", (event)->
 			entry =
-				id: 
+				# id: 
 				state: true
 				value: newTodo.value
 			todoList.todoAdd entry
@@ -20,7 +20,7 @@ todoList =
 	initList: ->
 	#add list to todo-list
 	todoAdd: (entry)->
-		window.localStorage.setItem "todoList:" +  
+		# window.localStorage.setItem "todoList:"
 	#edit list of todo-list
 	todoEdit: ->
 	#remove list of todo-list
