@@ -1,0 +1,12 @@
+#the compiled js and css 
+static/css
+static/js
+
+#node_modules files
+node_modules
+
+#sass cache
+.sass-cache
+
+Gruntfile.js
+think.txt
