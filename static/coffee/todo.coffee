@@ -10,25 +10,38 @@
 #	同时离线存储到本地浏览器
 #5. 点击todo-list的删除按钮，删除当前list，并且离线存储到本地
 #	同时下面的条目统计变化
-
 todoList =
 	#initialize the application
 	init: ->
+		todoList.initForm()
 	#bind events
 	initForm: ->
+		form = document.getElementsByTagName("form")[0]
+		newTodo = document.getElementById "new-todo"
+		form.addEventListener "submit", (event)->
+			entry =
+				state: true
+				value: newTodo.value
+			todoList.todoAdd entry
+			todoList.storageAdd entry
+			this.reset()
+			event.preventDefault()
+
 	#initialize the todo-list when first load the page or refresh the page
 	initList: ->
 	#add list to todo-list
-	todoAdd: ->
+	todoAdd: (entry)->
+		console.log entry
 	#edit list of todo-list
 	todoEdit: ->
 	#remove list of todo-list
 	todoRemove: ->
 	#offline storage the added list
-	storageAdd: ->
+	storageAdd: (entry)->
+		console.log entry
 	#offline storage the edited list
 	storageEdit: ->
 	#offline storage the result of removed list
 	storageRemove: ->
 
-
+todoList.init()
