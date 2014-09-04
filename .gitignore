@@ -1,6 +1,6 @@
 #the compiled js and css 
-static/css
-static/js
+#static/scss
+#static/coffee
 
 #node_modules files
 node_modules
