@@ -3,8 +3,9 @@ todoList =
 	allTodo: document.getElementById "todo-list"
 	#initialize the application
 	init: ->
-		todoList.initForm()
 		todoList.initStorage()
+		todoList.initForm()
+		todoList.initList()
 	#bind events
 	initForm: ->
 		form = document.getElementsByTagName("form")[0]
@@ -20,6 +21,18 @@ todoList =
 
 	#initialize the todo-list when first load the page or refresh the page
 	initList: ->
+		if window.localStorage.length-1
+			todolist = []
+			i = 0
+			while i < window.localStorage.length
+				key = window.localStorage.key(i) 
+				if /Todolist:\d+/.test(key)
+					todolist.push(JSON.parse(window.localStorage.getItem(key)))
+				i++
+			if todolist.length
+				todolist.sort()
+				for key in todolist
+					todoList.todoAdd key
 	initStorage: ->
 		if !todoList.index
 			window.localStorage.setItem "index", 1
