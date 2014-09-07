@@ -21,7 +21,7 @@ body {
 	background: #fff;
 	padding: 20px;
 	margin-bottom: 40px;
-	@include css3(border-shadow, rgba(0, 0, 0, 0.2) 0 2px 6px 0);
+	@include css3(box-shadow, rgba(0, 0, 0, 0.2) 0 2px 6px 0);
 	@include css3(border-radius, 0 0 5px 5px);
 	h1 {
 		font-size: 36px;

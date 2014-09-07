@@ -25,6 +25,7 @@ todoList =
 				parId = this.parentNode.parentNode.getAttribute("id")
 				entry = JSON.parse(window.localStorage.getItem("Todolist:"+ parId))
 				todoList.todoRemove(entry)
+				todoList.storageRemove(entry)
 
 	#initialize the todo-list when first load the page or refresh the page
 	initList: ->
@@ -68,6 +69,7 @@ todoList =
 		todoList.allTodo.appendChild(li)
 	#edit list of todo-list
 	todoEdit: ->
+
 	#remove list of todo-list
 	todoRemove: (entry)->
 		todoList.allTodo.removeChild(document.getElementById(entry.id))
@@ -75,10 +77,10 @@ todoList =
 	storageAdd: (entry)->
 		window.localStorage.setItem "Todolist:" + entry.id, JSON.stringify(entry)
 		window.localStorage.setItem "index", ++todoList.index
-		console.log window.localStorage
 	#offline storage the edited list
 	storageEdit: ->
 	#offline storage the result of removed list
 	storageRemove: (entry)->
-		window.localStorage.removeItem("Contacts:"+ entry.id)
+		window.localStorage.removeItem("Todolist:"+ entry.id)
+		window.localStorage.setItem "index", --todoList.index
 todoList.init()
