@@ -4,16 +4,61 @@
   todoList = {
     index: window.localStorage.getItem("index"),
     allTodo: document.getElementById("todo-list"),
+    todoCount: document.getElementById("todo-count"),
+    toggleAll: document.getElementById("toggle-all"),
+    hasClass: function(ele, cls) {
+      var reg;
+      reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+      return reg.test(ele.className);
+    },
+    addClass: function(ele, cls) {
+      if (!todoList.hasClass(ele, cls)) {
+        return ele.className += " " + cls;
+      }
+    },
+    removeClass: function(ele, cls) {
+      var reg;
+      if (todoList.hasClass(ele, cls)) {
+        reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+        return ele.className = ele.className.replace(reg, ' ');
+      }
+    },
+    getElementsByClass: function(cls) {
+      var el, els, _el, _i, _len;
+      el = [];
+      _el = document.getElementsByTagName("*");
+      for (_i = 0, _len = _el.length; _i < _len; _i++) {
+        els = _el[_i];
+        if (todoList.hasClass(els, cls)) {
+          el.push(els);
+        }
+      }
+      return el;
+    },
+    checkBox: function() {
+      var count, flag, todoInput, _i, _input, _len;
+      todoInput = todoList.getElementsByClass("toggle");
+      count = 0;
+      for (_i = 0, _len = todoInput.length; _i < _len; _i++) {
+        _input = todoInput[_i];
+        if (!_input.checked) {
+          count++;
+        }
+      }
+      todoList.todoCount.innerHTML = "<span>" + count + "</span>" + " item left";
+      flag = count === 0 ? true : false;
+      return todoList.toggleAll.checked = flag;
+    },
     init: function() {
       todoList.initStorage();
       todoList.initList();
+      todoList.checkBox();
       return todoList.initForm();
     },
     initForm: function() {
-      var form, list, lists, newTodo, _i, _len, _results;
+      var form, newTodo;
       form = document.getElementsByTagName("form")[0];
       newTodo = document.getElementById("new-todo");
-      lists = todoList.allTodo.getElementsByTagName("a");
       form.addEventListener("submit", function(event) {
         var entry;
         entry = {
@@ -23,21 +68,48 @@
         };
         todoList.todoAdd(entry);
         todoList.storageAdd(entry);
+        todoList.checkBox();
         this.reset();
         return event.preventDefault();
       });
-      _results = [];
-      for (_i = 0, _len = lists.length; _i < _len; _i++) {
-        list = lists[_i];
-        _results.push(list.addEventListener("click", function() {
-          var entry, parId;
-          parId = this.parentNode.parentNode.getAttribute("id");
+      todoList.allTodo.addEventListener("click", function(e) {
+        var entry, parId, parent, target;
+        target = e.target;
+        if (target && target.nodeName === "A") {
+          parId = target.parentNode.parentNode.getAttribute("id");
           entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
           todoList.todoRemove(entry);
-          return todoList.storageRemove(entry);
-        }));
-      }
-      return _results;
+          todoList.storageRemove(entry);
+          todoList.checkBox();
+          todoList.checkIsAll();
+        }
+        if (target && target.nodeName === "INPUT") {
+          parent = target.parentNode.parentNode;
+          if (target.checked) {
+            todoList.addClass(parent, "done");
+          } else {
+            todoList.removeClass(parent, "done");
+          }
+          todoList.checkBox();
+          return todoList.checkIsAll();
+        }
+      });
+      return todoList.toggleAll.addEventListener("click", function() {
+        var flag, parent, todoInput, _i, _input, _len;
+        todoInput = todoList.getElementsByClass("toggle");
+        flag = this.checked ? true : false;
+        for (_i = 0, _len = todoInput.length; _i < _len; _i++) {
+          _input = todoInput[_i];
+          parent = _input.parentNode.parentNode;
+          _input.checked = flag;
+          if (flag === true) {
+            todoList.addClass(parent, "done");
+          } else {
+            todoList.removeClass(parent, "done");
+          }
+        }
+        return todoList.checkBox();
+      });
     },
     initList: function() {
       var i, key, todolist, _i, _len, _results;
@@ -104,6 +176,8 @@
     }
   };
 
-  todoList.init();
+  window.onload = function() {
+    return todoList.init();
+  };
 
 }).call(this);
