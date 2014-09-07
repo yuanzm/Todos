@@ -10,7 +10,6 @@ todoList =
 	initForm: ->
 		form = document.getElementsByTagName("form")[0]
 		newTodo = document.getElementById "new-todo"
-		lists = todoList.allTodo.getElementsByTagName "a"
 		form.addEventListener "submit", (event)->
 			entry =
 				id: todoList.index
@@ -20,9 +19,9 @@ todoList =
 			todoList.storageAdd entry
 			this.reset()
 			event.preventDefault()
-		for list in lists
-			list.addEventListener "click", ->
-				parId = this.parentNode.parentNode.getAttribute("id")
+		todoList.allTodo.addEventListener "click", (e)->
+			if e.target && e.target.nodeName == "A"
+				parId = e.target.parentNode.parentNode.getAttribute("id")
 				entry = JSON.parse(window.localStorage.getItem("Todolist:"+ parId))
 				todoList.todoRemove(entry)
 				todoList.storageRemove(entry)
