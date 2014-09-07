@@ -21,24 +21,25 @@ todoList =
 			if todoList.hasClass(els, cls)
 				el.push els
 		return el
-	checkNum: ->
+	checkBox: ->
 		todoInput = todoList.getElementsByClass "toggle"
 		count = 0
 		for _input in todoInput
 			if not _input.checked
 				count++
 		todoList.todoCount.innerHTML = "<span>" + count + "</span>" + " item left"
+		flag = if count == 0 then true else false
+		todoList.toggleAll.checked = flag
 	#initialize the application
 	init: ->
 		todoList.initStorage()
 		todoList.initList()
-		todoList.checkNum()
+		todoList.checkBox()
 		todoList.initForm()
 	#bind events
 	initForm: ->
 		form = document.getElementsByTagName("form")[0]
 		newTodo = document.getElementById "new-todo"
-		todoInput = todoList.getElementsByClass "toggle"
 		form.addEventListener "submit", (event)->
 			entry =
 				id: todoList.index
@@ -46,7 +47,7 @@ todoList =
 				value: newTodo.value
 			todoList.todoAdd entry
 			todoList.storageAdd entry
-			todoList.checkNum()
+			todoList.checkBox()
 			this.reset()
 			event.preventDefault()
 		todoList.allTodo.addEventListener "click", (e)->
@@ -56,6 +57,8 @@ todoList =
 				entry = JSON.parse(window.localStorage.getItem("Todolist:"+ parId))
 				todoList.todoRemove(entry)
 				todoList.storageRemove(entry)
+				todoList.checkBox()
+				todoList.checkIsAll()
 			if target && target.nodeName == "INPUT"
 				# if todoList.hasClass(target, "toggle")
 				parent = target.parentNode.parentNode
@@ -63,8 +66,10 @@ todoList =
 					todoList.addClass(parent, "done")
 				else
 					todoList.removeClass(parent, "done")
-				todoList.checkNum()
+				todoList.checkBox()
+				todoList.checkIsAll()
 		todoList.toggleAll.addEventListener "click", ->
+			todoInput = todoList.getElementsByClass "toggle"
 			flag = if this.checked then true else false 
 			for _input in todoInput
 				parent = _input.parentNode.parentNode	
@@ -73,7 +78,7 @@ todoList =
 					todoList.addClass(parent, "done")
 				else
 					todoList.removeClass(parent, "done")
-			todoList.checkNum()
+			todoList.checkBox()
 
 	#initialize the todo-list when first load the page or refresh the page
 	initList: ->
@@ -131,6 +136,6 @@ todoList =
 	storageRemove: (entry)->
 		window.localStorage.removeItem("Todolist:"+ entry.id)
 		window.localStorage.setItem "index", --todoList.index
-		
+
 window.onload = ->
 	todoList.init()
