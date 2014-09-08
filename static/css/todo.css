@@ -163,3 +163,18 @@ body {
 
 #credits a {
   color: #888; }
+
+@media screen and (max-width: 480px) {
+  body {
+    width: 95%; }
+
+  #todoapp {
+    padding: 10px; }
+    #todoapp input[type="text"] {
+      width: 90%; }
+
+  #todo-list li.editing .edit {
+    width: 85%; }
+
+  #instructions {
+    display: none; } }
