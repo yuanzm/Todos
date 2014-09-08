@@ -1,5 +1,5 @@
 (function() {
-  var todoList;
+  var EventUtil, todoList;
 
   todoList = {
     index: window.localStorage.getItem("index"),
@@ -7,6 +7,8 @@
     todoCount: document.getElementById("todo-count"),
     toggleAll: document.getElementById("toggle-all"),
     _clear: document.getElementById("clear-completed"),
+    form: document.getElementsByTagName("form")[0],
+    newTodo: document.getElementById("new-todo"),
     hasClass: function(ele, cls) {
       var reg;
       reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
@@ -37,154 +39,30 @@
       return el;
     },
     checkBox: function() {
-      var clearNum, count, flag, todoInput, _i, _input, _len;
+      var clearNum, count, flag, footer, todoInput, _i, _input, _len, _result;
       todoInput = todoList.getElementsByClass("toggle");
+      footer = document.getElementsByTagName("footer")[0];
       count = 0;
+      _result = [];
       for (_i = 0, _len = todoInput.length; _i < _len; _i++) {
         _input = todoInput[_i];
         if (!_input.checked) {
           count++;
+        } else {
+          _result.push(_input);
         }
       }
       todoList.todoCount.innerHTML = "<span>" + count + "</span>" + " item left";
       flag = count === 0 ? true : false;
-      todoList.toggleAll.checked = flag;
+      todoList.toggleAll.checked = todoInput.length === 0 ? false : flag;
+      if (todoInput.length > 0) {
+        footer.style.display = "block";
+      } else {
+        footer.style.display = "none";
+      }
       clearNum = todoInput.length - count;
-      return todoList._clear.innerHTML = "Clear " + clearNum + " completed";
-    },
-    init: function() {
-      todoList.initStorage();
-      todoList.initList();
-      todoList.checkBox();
-      return todoList.initForm();
-    },
-    initForm: function() {
-      var allLi, form, li, newTodo, _i, _len;
-      form = document.getElementsByTagName("form")[0];
-      newTodo = document.getElementById("new-todo");
-      form.addEventListener("submit", function(event) {
-        var entry;
-        entry = {
-          id: todoList.index,
-          state: "",
-          isCheck: false,
-          value: newTodo.value
-        };
-        todoList.todoAdd(entry);
-        todoList.storageAdd(entry);
-        todoList.checkBox();
-        this.reset();
-        return event.preventDefault();
-      });
-      todoList.allTodo.addEventListener("click", function(e) {
-        var entry, parId, parent, target;
-        target = e.target;
-        if (target) {
-          parId = target.parentNode.parentNode.getAttribute("id");
-          entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
-        }
-        if (target && target.nodeName === "A") {
-          todoList.todoRemove(entry);
-          todoList.storageRemove(entry);
-          todoList.checkBox();
-        }
-        if (target && target.nodeName === "INPUT" && todoList.hasClass(target, "toggle")) {
-          parent = target.parentNode.parentNode;
-          if (target.checked) {
-            todoList.addClass(parent, "done");
-            entry.state = "done";
-            entry.isCheck = true;
-          } else {
-            entry.state = "";
-            entry.isCheck = false;
-            todoList.removeClass(parent, "done");
-          }
-          todoList.storageEdit(entry);
-          return todoList.checkBox();
-        }
-      });
-      allLi = document.getElementsByTagName("li");
-      for (_i = 0, _len = allLi.length; _i < _len; _i++) {
-        li = allLi[_i];
-        li.addEventListener("dblclick", function(e) {
-          var entry, parId;
-          parId = this.getAttribute("id");
-          entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
-          todoList.addClass(this, "editing");
-          return todoList.getElementsByClass("edit")[0].focus();
-        });
-      }
-      todoList.toggleAll.addEventListener("click", function() {
-        var entry, flag, j, key, parent, state, todoInput, _input, _j, _len1;
-        todoInput = todoList.getElementsByClass("toggle");
-        flag = this.checked ? true : false;
-        state = this.checked ? "done" : "";
-        for (_j = 0, _len1 = todoInput.length; _j < _len1; _j++) {
-          _input = todoInput[_j];
-          parent = _input.parentNode.parentNode;
-          _input.checked = flag;
-          if (flag === true) {
-            todoList.addClass(parent, "done");
-          } else {
-            todoList.removeClass(parent, "done");
-          }
-        }
-        j = 0;
-        while (j < window.localStorage.length) {
-          key = window.localStorage.key(j);
-          if (/Todolist:\d+/.test(key)) {
-            console.log(key);
-            entry = JSON.parse(window.localStorage.getItem(key));
-            entry.state = state;
-            entry.isCheck = flag;
-            todoList.storageEdit(entry);
-          }
-          j++;
-        }
-        return todoList.checkBox();
-      });
-      return document.onkeydown = function(moz_ev) {
-        var ev;
-        if (window.event) {
-          ev = window.event;
-        } else {
-          ev = moz_ev;
-        }
-        if (ev !== null && ev.keyCode === 13) {
-          return todoList.todoEdit(ev.target);
-        }
-      };
-    },
-    initList: function() {
-      var i, key, todolist, _i, _len, _results;
-      if (window.localStorage.length - 1) {
-        todolist = [];
-        i = 0;
-        while (i < window.localStorage.length) {
-          key = window.localStorage.key(i);
-          if (/Todolist:\d+/.test(key)) {
-            todolist.push(JSON.parse(window.localStorage.getItem(key)));
-          }
-          i++;
-        }
-        todolist.sort(function(a, b) {
-          var flag;
-          return flag = a.id < b.id ? -1 : 1;
-        });
-        if (todolist.length) {
-          _results = [];
-          for (_i = 0, _len = todolist.length; _i < _len; _i++) {
-            key = todolist[_i];
-            _results.push(todoList.todoAdd(key));
-          }
-          return _results;
-        }
-      }
-    },
-    initStorage: function() {
-      if (!todoList.index) {
-        return window.localStorage.setItem("index", 1);
-      }
+      todoList._clear.innerHTML = "Clear " + clearNum + " completed";
+      return _result;
     },
     todoAdd: function(entry) {
       var a, div, input, input2, label, li;
@@ -214,7 +92,6 @@
     },
     todoEdit: function(target) {
       var entry, label, parId;
-      target.focus();
       parId = target.parentNode.getAttribute("id");
       entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
       entry.value = target.value;
@@ -226,6 +103,11 @@
     todoRemove: function(entry) {
       return todoList.allTodo.removeChild(document.getElementById(entry.id));
     },
+    initStorage: function() {
+      if (!todoList.index) {
+        return window.localStorage.setItem("index", 1);
+      }
+    },
     storageAdd: function(entry) {
       window.localStorage.setItem("Todolist:" + entry.id, JSON.stringify(entry));
       return window.localStorage.setItem("index", ++todoList.index);
@@ -236,6 +118,166 @@
     storageRemove: function(entry) {
       window.localStorage.removeItem("Todolist:" + entry.id);
       return window.localStorage.setItem("index", --todoList.index);
+    },
+    bindEvent: function() {
+      var allLi, li, _i, _len;
+      todoList.form.addEventListener("submit", function(event) {
+        var entry;
+        if (todoList.newTodo.value !== "") {
+          entry = {
+            id: todoList.index,
+            state: "",
+            isCheck: false,
+            value: todoList.newTodo.value
+          };
+          todoList.todoAdd(entry);
+          todoList.storageAdd(entry);
+          todoList.checkBox();
+          this.reset();
+        }
+        return event.preventDefault();
+      });
+      todoList.allTodo.addEventListener("click", function(e) {
+        var entry, parId, parent, target;
+        target = e.target;
+        if (target) {
+          parId = target.parentNode.parentNode.getAttribute("id");
+          entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
+        }
+        if (target && target.nodeName === "A") {
+          todoList.todoRemove(entry);
+          todoList.storageRemove(entry);
+        }
+        if (target && target.nodeName === "INPUT" && todoList.hasClass(target, "toggle")) {
+          parent = target.parentNode.parentNode;
+          if (target.checked) {
+            todoList.addClass(parent, "done");
+            entry.state = "done";
+            entry.isCheck = true;
+          } else {
+            todoList.removeClass(parent, "done");
+            entry.state = "";
+            entry.isCheck = false;
+          }
+          todoList.storageEdit(entry);
+        }
+        return todoList.checkBox();
+      });
+      allLi = document.getElementsByTagName("li");
+      for (_i = 0, _len = allLi.length; _i < _len; _i++) {
+        li = allLi[_i];
+        li.addEventListener("dblclick", function(e) {
+          var entry, parId;
+          parId = this.getAttribute("id");
+          entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
+          todoList.addClass(this, "editing");
+          return todoList.getElementsByClass("edit")[0].focus();
+        });
+      }
+      todoList.toggleAll.addEventListener("click", function() {
+        var entry, flag, parId, parent, state, todoInput, _input, _j, _len1;
+        todoInput = todoList.getElementsByClass("toggle");
+        flag = this.checked ? true : false;
+        state = this.checked ? "done" : "";
+        for (_j = 0, _len1 = todoInput.length; _j < _len1; _j++) {
+          _input = todoInput[_j];
+          parent = _input.parentNode.parentNode;
+          _input.checked = flag;
+          parId = _input.parentNode.parentNode.getAttribute("id");
+          entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
+          entry.state = state;
+          entry.isCheck = flag;
+          todoList.storageEdit(entry);
+          if (flag === true) {
+            todoList.addClass(parent, "done");
+          } else {
+            todoList.removeClass(parent, "done");
+          }
+        }
+        return todoList.checkBox();
+      });
+      document.onkeydown = function(moz_ev) {
+        var ev;
+        if (window.event) {
+          ev = window.event;
+        } else {
+          ev = moz_ev;
+        }
+        if (ev !== null && ev.keyCode === 13) {
+          if (todoList.hasClass(ev.target, "edit")) {
+            return todoList.todoEdit(ev.target);
+          }
+        }
+      };
+      return todoList._clear.addEventListener("click", function() {
+        var entry, parId, _j, _len1, _rel, _result, _results;
+        _result = todoList.checkBox();
+        _results = [];
+        for (_j = 0, _len1 = _result.length; _j < _len1; _j++) {
+          _rel = _result[_j];
+          parId = _rel.parentNode.parentNode.getAttribute("id");
+          entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
+          todoList.todoRemove(entry);
+          todoList.storageRemove(entry);
+          _results.push(todoList.checkBox());
+        }
+        return _results;
+      });
+    },
+    initList: function() {
+      var i, key, todolist, _i, _len, _results;
+      if (window.localStorage.length - 1) {
+        todolist = [];
+        i = 0;
+        while (i < window.localStorage.length) {
+          key = window.localStorage.key(i);
+          if (/Todolist:\d+/.test(key)) {
+            todolist.push(JSON.parse(window.localStorage.getItem(key)));
+          }
+          i++;
+        }
+        todolist.sort(function(a, b) {
+          var flag;
+          return flag = a.id < b.id ? -1 : 1;
+        });
+        if (todolist.length) {
+          _results = [];
+          for (_i = 0, _len = todolist.length; _i < _len; _i++) {
+            key = todolist[_i];
+            _results.push(todoList.todoAdd(key));
+          }
+          return _results;
+        }
+      }
+    },
+    init: function() {
+      todoList.initStorage();
+      todoList.initList();
+      todoList.checkBox();
+      return todoList.bindEvent();
+    }
+  };
+
+  EventUtil = {
+    addHandler: function(element, type, handler) {
+      if (element.addEventListener) {
+        element.addEventListener(type, handler, false);
+      }
+      if (element.attachEvent) {
+        return element.attachEvent("on" + type, handler);
+      } else {
+        return element["on" + type] = handler;
+      }
+    },
+    removeHandler: function(element, type, handler) {
+      if (element.removeEventListener) {
+        element.removeEventListener(type, handler, false);
+      }
+      if (element.detachEvent) {
+        return element.detachEvent("on" + type, handler);
+      } else {
+        return element["on" + type] = null;
+      }
     }
   };
 
