@@ -1,3 +1,19 @@
+EventUtil =
+	addHandler: (element, type, handler)->
+		if element.addEventListener
+			element.addEventListener(type,handler,false)
+		if element.attachEvent
+			element.attachEvent("on" + type,handler)
+		else
+			element["on" + type] = handler
+	removeHandler: (element, type,handler) ->
+		if element.removeEventListener
+			element.removeEventListener(type,handler,false)
+		if element.detachEvent
+			element.detachEvent("on" + type,handler)
+		else
+			element["on" + type] = null
+
 todoList =
 	index: window.localStorage.getItem "index"
 	allTodo: document.getElementById "todo-list"
@@ -96,7 +112,7 @@ todoList =
 		window.localStorage.setItem "index", --todoList.index
 		#bind events
 	bindEvent: ->
-		todoList.form.addEventListener "submit", (event)->
+		EventUtil.addHandler todoList.form,"submit",(event)->
 			if todoList.newTodo.value != ""
 				entry =
 					id: todoList.index
@@ -108,7 +124,7 @@ todoList =
 				todoList.checkBox()
 				this.reset()
 			event.preventDefault()
-		todoList.allTodo.addEventListener "click", (e)->
+		EventUtil.addHandler todoList.allTodo, "click", (e)->
 			target = e.target
 			if target
 				parId = target.parentNode.parentNode.getAttribute("id")
@@ -130,12 +146,12 @@ todoList =
 			todoList.checkBox()
 		allLi = document.getElementsByTagName("li")
 		for li in allLi
-			li.addEventListener "dblclick", (e)->
+			EventUtil.addHandler li, "dblclick", (e)->
 				parId = this.getAttribute("id")
 				entry = JSON.parse(window.localStorage.getItem("Todolist:"+ parId))
 				todoList.addClass(this,"editing")
 				todoList.getElementsByClass("edit")[0].focus()
-		todoList.toggleAll.addEventListener "click", ->
+		EventUtil.addHandler todoList.toggleAll, "click", ->
 			todoInput = todoList.getElementsByClass "toggle"
 			flag = if this.checked then true else false
 			state = if this.checked then "done" else "" 
@@ -160,7 +176,7 @@ todoList =
 			if ev != null && ev.keyCode == 13
 				if todoList.hasClass(ev.target,"edit")
 					todoList.todoEdit(ev.target)
-		todoList._clear.addEventListener "click", ->
+		EventUtil.addHandler todoList._clear, "click", ->
 			_result = todoList.checkBox()
 			for _rel in _result
 				parId = _rel.parentNode.parentNode.getAttribute("id")
@@ -189,20 +205,5 @@ todoList =
 		todoList.initList()
 		todoList.checkBox()
 		todoList.bindEvent()
-EventUtil =
-	addHandler: (element, type, handler)->
-		if element.addEventListener
-			element.addEventListener(type,handler,false)
-		if element.attachEvent
-			element.attachEvent("on" + type,handler)
-		else
-			element["on" + type] = handler
-	removeHandler: (element, type,handler) ->
-		if element.removeEventListener
-			element.removeEventListener(type,handler,false)
-		if element.detachEvent
-			element.detachEvent("on" + type,handler)
-		else
-			element["on" + type] = null
 window.onload = ->
 	todoList.init()

@@ -1,6 +1,29 @@
 (function() {
   var EventUtil, todoList;
 
+  EventUtil = {
+    addHandler: function(element, type, handler) {
+      if (element.addEventListener) {
+        element.addEventListener(type, handler, false);
+      }
+      if (element.attachEvent) {
+        return element.attachEvent("on" + type, handler);
+      } else {
+        return element["on" + type] = handler;
+      }
+    },
+    removeHandler: function(element, type, handler) {
+      if (element.removeEventListener) {
+        element.removeEventListener(type, handler, false);
+      }
+      if (element.detachEvent) {
+        return element.detachEvent("on" + type, handler);
+      } else {
+        return element["on" + type] = null;
+      }
+    }
+  };
+
   todoList = {
     index: window.localStorage.getItem("index"),
     allTodo: document.getElementById("todo-list"),
@@ -121,7 +144,7 @@
     },
     bindEvent: function() {
       var allLi, li, _i, _len;
-      todoList.form.addEventListener("submit", function(event) {
+      EventUtil.addHandler(todoList.form, "submit", function(event) {
         var entry;
         if (todoList.newTodo.value !== "") {
           entry = {
@@ -137,7 +160,7 @@
         }
         return event.preventDefault();
       });
-      todoList.allTodo.addEventListener("click", function(e) {
+      EventUtil.addHandler(todoList.allTodo, "click", function(e) {
         var entry, parId, parent, target;
         target = e.target;
         if (target) {
@@ -166,7 +189,7 @@
       allLi = document.getElementsByTagName("li");
       for (_i = 0, _len = allLi.length; _i < _len; _i++) {
         li = allLi[_i];
-        li.addEventListener("dblclick", function(e) {
+        EventUtil.addHandler(li, "dblclick", function(e) {
           var entry, parId;
           parId = this.getAttribute("id");
           entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
@@ -174,7 +197,7 @@
           return todoList.getElementsByClass("edit")[0].focus();
         });
       }
-      todoList.toggleAll.addEventListener("click", function() {
+      EventUtil.addHandler(todoList.toggleAll, "click", function() {
         var entry, flag, parId, parent, state, todoInput, _input, _j, _len1;
         todoInput = todoList.getElementsByClass("toggle");
         flag = this.checked ? true : false;
@@ -209,7 +232,7 @@
           }
         }
       };
-      return todoList._clear.addEventListener("click", function() {
+      return EventUtil.addHandler(todoList._clear, "click", function() {
         var entry, parId, _j, _len1, _rel, _result, _results;
         _result = todoList.checkBox();
         _results = [];
@@ -255,29 +278,6 @@
       todoList.initList();
       todoList.checkBox();
       return todoList.bindEvent();
-    }
-  };
-
-  EventUtil = {
-    addHandler: function(element, type, handler) {
-      if (element.addEventListener) {
-        element.addEventListener(type, handler, false);
-      }
-      if (element.attachEvent) {
-        return element.attachEvent("on" + type, handler);
-      } else {
-        return element["on" + type] = handler;
-      }
-    },
-    removeHandler: function(element, type, handler) {
-      if (element.removeEventListener) {
-        element.removeEventListener(type, handler, false);
-      }
-      if (element.detachEvent) {
-        return element.detachEvent("on" + type, handler);
-      } else {
-        return element["on" + type] = null;
-      }
     }
   };
 
