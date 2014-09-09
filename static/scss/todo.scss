@@ -192,7 +192,8 @@ body {
 	#instructions {
 		display: none;
 	}
-	.phone {
-		display: none;
+	#todo-list li span {
+		font-size: 8px;
+		bottom: 7px;
 	}
 }
