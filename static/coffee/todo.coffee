@@ -14,6 +14,24 @@ EventUtil =
 		else
 			element["on" + type] = null
 
+#extend the prototype of Date
+#Author:  meizz
+Date.prototype.Format = (fmt) ->
+	o = 
+		"M+" : this.getMonth() + 1
+		"d+" : this.getDate()
+		"h+" : this.getHours()
+		"m+" : this.getMinutes()
+		"s+" : this.getSeconds()
+		"q+" : Math.floor((this.getMonth() + 3) / 3)
+		"S"  : this.getMilliseconds()
+	if /(y+)/.test(fmt)
+		fmt = fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length))
+	for k of o
+		if new RegExp("("+k+")").test(fmt)
+			fmt = fmt.replace(RegExp.$1, flag = if RegExp.$1.length==1 then (o[k]) else (("00"+ o[k]).substr((""+ o[k]).length)))
+	return fmt
+
 todoList =
 	index: window.localStorage.getItem "index"
 	allTodo: document.getElementById "todo-list"
@@ -24,8 +42,13 @@ todoList =
 	newTodo: document.getElementById "new-todo"
 	hasClass: (ele, cls) ->
 		reg = new RegExp('(\\s|^)' + cls + '(\\s|$)')
-		return reg.test(ele.className)
+		className = if ele.getAttribute("class") then ele.className else ""
+		return reg.test(className)
 	addClass: (ele,cls) ->
+		#IE6/7不支持setAttribute('class',xxx)方式设置元素的class。
+		#IE8/9/10/Firefox/Safari/Chrome/Opera不支持setAttribute('className',xxx)方式设置元素的class。 
+		#很有趣，使用setAttribute的时候第一个参数为class和className的情形在IE6/7
+		#和IE8/9/10/Firefox/Safari/Chrome/Opera刚好相反。 
 		if not todoList.hasClass(ele, cls)
 			ele.className += " " + cls
 	removeClass: (ele,cls) ->
@@ -67,6 +90,7 @@ todoList =
 		label = document.createElement "label"
 		a = document.createElement "a"
 		input2 = document.createElement "input"
+		span = document.createElement "span"
 		li.setAttribute "id", entry.id
 		li.className = entry.state
 		div.className = "view"
@@ -74,12 +98,15 @@ todoList =
 		input.className = "toggle"
 		input.checked = entry.isCheck
 		label.appendChild(document.createTextNode(entry.value))
+		span.className = "phone"
+		span.appendChild(document.createTextNode(entry.time))
 		a.className = "destroy"
 		input2.className = "edit"
 		input2.setAttribute "type","text"
 		input2.setAttribute "value", entry.value
 		div.appendChild(input)
 		div.appendChild(label)
+		div.appendChild(span)
 		div.appendChild(a)
 		li.appendChild(div)
 		li.appendChild(input2)
@@ -89,9 +116,12 @@ todoList =
 		parId = target.parentNode.getAttribute("id")
 		entry = JSON.parse(window.localStorage.getItem("Todolist:"+ parId))
 		entry.value = target.value
+		entry.time = new Date().Format("yyyy-MM-dd hh:mm:ss")
 		todoList.storageEdit(entry)
 		label = target.parentNode.getElementsByTagName("label")[0]
+		span = target.parentNode.getElementsByTagName("span")[0]
 		label.innerHTML = target.value
+		span.innerHTML = entry.time
 		todoList.removeClass(target.parentNode,"editing")
 	#remove list of todo-list
 	todoRemove: (entry)->
@@ -119,6 +149,7 @@ todoList =
 					state: ""
 					isCheck: false
 					value: todoList.newTodo.value
+					time: new Date().Format("yyyy-MM-dd hh:mm:ss")
 				todoList.todoAdd entry
 				todoList.storageAdd entry
 				todoList.checkBox()
@@ -169,13 +200,11 @@ todoList =
 					todoList.removeClass(parent, "done")
 			todoList.checkBox()
 		document.onkeydown = (moz_ev)->
-			if window.event
-				ev = window.event
-			else
-				ev = moz_ev
+			ev = if window.event then window.event else moz_ev
+			target = if ev.target then ev.target else srcElement
 			if ev != null && ev.keyCode == 13
-				if todoList.hasClass(ev.target,"edit")
-					todoList.todoEdit(ev.target)
+				if todoList.hasClass(target,"edit")
+					todoList.todoEdit(target)
 		EventUtil.addHandler todoList._clear, "click", ->
 			_result = todoList.checkBox()
 			for _rel in _result
@@ -205,5 +234,6 @@ todoList =
 		todoList.initList()
 		todoList.checkBox()
 		todoList.bindEvent()
+
 window.onload = ->
 	todoList.init()

@@ -24,6 +24,28 @@
     }
   };
 
+  Date.prototype.Format = function(fmt) {
+    var flag, k, o;
+    o = {
+      "M+": this.getMonth() + 1,
+      "d+": this.getDate(),
+      "h+": this.getHours(),
+      "m+": this.getMinutes(),
+      "s+": this.getSeconds(),
+      "q+": Math.floor((this.getMonth() + 3) / 3),
+      "S": this.getMilliseconds()
+    };
+    if (/(y+)/.test(fmt)) {
+      fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    }
+    for (k in o) {
+      if (new RegExp("(" + k + ")").test(fmt)) {
+        fmt = fmt.replace(RegExp.$1, flag = RegExp.$1.length === 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+      }
+    }
+    return fmt;
+  };
+
   todoList = {
     index: window.localStorage.getItem("index"),
     allTodo: document.getElementById("todo-list"),
@@ -33,9 +55,10 @@
     form: document.getElementsByTagName("form")[0],
     newTodo: document.getElementById("new-todo"),
     hasClass: function(ele, cls) {
-      var reg;
+      var className, reg;
       reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-      return reg.test(ele.className);
+      className = ele.getAttribute("class") ? ele.className : "";
+      return reg.test(className);
     },
     addClass: function(ele, cls) {
       if (!todoList.hasClass(ele, cls)) {
@@ -88,13 +111,14 @@
       return _result;
     },
     todoAdd: function(entry) {
-      var a, div, input, input2, label, li;
+      var a, div, input, input2, label, li, span;
       li = document.createElement("li");
       div = document.createElement("div");
       input = document.createElement("input");
       label = document.createElement("label");
       a = document.createElement("a");
       input2 = document.createElement("input");
+      span = document.createElement("span");
       li.setAttribute("id", entry.id);
       li.className = entry.state;
       div.className = "view";
@@ -102,25 +126,31 @@
       input.className = "toggle";
       input.checked = entry.isCheck;
       label.appendChild(document.createTextNode(entry.value));
+      span.className = "phone";
+      span.appendChild(document.createTextNode(entry.time));
       a.className = "destroy";
       input2.className = "edit";
       input2.setAttribute("type", "text");
       input2.setAttribute("value", entry.value);
       div.appendChild(input);
       div.appendChild(label);
+      div.appendChild(span);
       div.appendChild(a);
       li.appendChild(div);
       li.appendChild(input2);
       return todoList.allTodo.appendChild(li);
     },
     todoEdit: function(target) {
-      var entry, label, parId;
+      var entry, label, parId, span;
       parId = target.parentNode.getAttribute("id");
       entry = JSON.parse(window.localStorage.getItem("Todolist:" + parId));
       entry.value = target.value;
+      entry.time = new Date().Format("yyyy-MM-dd hh:mm:ss");
       todoList.storageEdit(entry);
       label = target.parentNode.getElementsByTagName("label")[0];
+      span = target.parentNode.getElementsByTagName("span")[0];
       label.innerHTML = target.value;
+      span.innerHTML = entry.time;
       return todoList.removeClass(target.parentNode, "editing");
     },
     todoRemove: function(entry) {
@@ -151,7 +181,8 @@
             id: todoList.index,
             state: "",
             isCheck: false,
-            value: todoList.newTodo.value
+            value: todoList.newTodo.value,
+            time: new Date().Format("yyyy-MM-dd hh:mm:ss")
           };
           todoList.todoAdd(entry);
           todoList.storageAdd(entry);
@@ -220,15 +251,12 @@
         return todoList.checkBox();
       });
       document.onkeydown = function(moz_ev) {
-        var ev;
-        if (window.event) {
-          ev = window.event;
-        } else {
-          ev = moz_ev;
-        }
+        var ev, target;
+        ev = window.event ? window.event : moz_ev;
+        target = ev.target ? ev.target : srcElement;
         if (ev !== null && ev.keyCode === 13) {
-          if (todoList.hasClass(ev.target, "edit")) {
-            return todoList.todoEdit(ev.target);
+          if (todoList.hasClass(target, "edit")) {
+            return todoList.todoEdit(target);
           }
         }
       };
