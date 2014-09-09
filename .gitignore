@@ -1,0 +1,11 @@
+#the compiled js and css 
+#static/scss
+#static/coffee
+
+#node_modules files
+node_modules
+
+#sass cache
+.sass-cache
+
+Gruntfile.js
